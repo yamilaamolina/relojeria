@@ -3,6 +3,7 @@ import sqlite3
 from sqlite3.dbapi2 import Cursor, connect
 from flask_restful import Resource, reqparse
 from flask_jwt import jwt_required
+from flask_cors import cross_origin
 
 class Empleado(Resource):
 
@@ -21,6 +22,7 @@ class Empleado(Resource):
 
         return {'message': 'Empleado no encontrado'}, 404
 
+    @cross_origin
     @jwt_required()
     def post(self, legajo):
         if self.find_by_legajo(legajo):
@@ -38,6 +40,7 @@ class Empleado(Resource):
 
         return empleado, 201
 
+    @cross_origin
     @jwt_required()
     def delete(self, legajo):
         if self.find_by_legajo(legajo):
@@ -52,6 +55,7 @@ class Empleado(Resource):
 
         return {'message': "No existe un empleado con el legajo {}".format(legajo)}, 404
 
+    @cross_origin
     @jwt_required()
     def put(self, legajo):
         data = Empleado.parser.parse_args()
@@ -99,6 +103,7 @@ class Empleado(Resource):
         connection.close()
 
 class ListEmpleado(Resource):
+    @cross_origin
     def get(self):
         connection = sqlite3.connect("data.db")
         cursor = connection.cursor()

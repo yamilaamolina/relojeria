@@ -1,6 +1,7 @@
 import sqlite3
 from sqlite3.dbapi2 import Cursor, connect
 from flask_restful import Resource, reqparse
+from flask_cors import cross_origin
 
 class User:
     def __init__(self, _id, username, password):
@@ -56,6 +57,7 @@ class UserRegister(Resource):
         help="Este campo no puede dejarse vacío."
     )
 
+    @cross_origin
     def post(self):
         data = UserRegister.parser.parse_args()
         

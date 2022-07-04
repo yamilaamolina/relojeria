@@ -4,5 +4,5 @@ Flask-JWT
 Flask-SQLAlchemy
 Flask-CORS
 Flask-MySQLdb
-Werkzeug
+Werkzeug~=2.0.0
 uwsgi

@@ -4,9 +4,9 @@ from flask_jwt import JWT
 from flask_cors import CORS 
 from flask_mysqldb import MySQL
 
-from security import authenticate, identity
-from user import UserRegister
-from empleado import Empleado, ListEmpleado
+from code/security import authenticate, identity
+from code/user import UserRegister
+from code/empleado import Empleado, ListEmpleado
 
 app = Flask(__name__)
 app.secret_key = 'Gestion2021+'

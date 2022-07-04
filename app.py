@@ -4,8 +4,6 @@ from flask_jwt import JWT
 from flask_cors import CORS 
 from flask_mysqldb import MySQL
 
-from code import security, code, empleado
-
 from security import authenticate, identity
 from user import UserRegister
 from empleado import Empleado, ListEmpleado

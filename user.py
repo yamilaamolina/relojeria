@@ -57,7 +57,6 @@ class UserRegister(Resource):
         help="Este campo no puede dejarse vacío."
     )
 
-    @cross_origin
     def post(self):
         data = UserRegister.parser.parse_args()
         

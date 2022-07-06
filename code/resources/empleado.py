@@ -33,7 +33,7 @@ class Empleado(Resource):
         empleado = EmpleadoModel(legajo, data['nombre'])
 
         try:
-            empleado.insert()
+            empleado.save_to_db()
         except:
             return {'message': 'Un error ocurrió insertando el empleado'}, 500
 
@@ -41,14 +41,10 @@ class Empleado(Resource):
 
     @jwt_required()
     def delete(self, legajo):
-        if EmpleadoModel.find_by_legajo(legajo):
-            connection = sqlite3.connect("data.db")
-            cursor = connection.cursor()
-            query = "DELETE FROM empleado WHERE legajo = ?"
-            cursor.execute(query, (legajo,))
-            connection.commit()
-            connection.close()
-
+        empleado = EmpleadoModel.find_by_legajo(legajo)
+        
+        if empleado:
+            empleado.delete_to_db()
             return {'message': 'Empleado eliminado'}, 200
 
         return {'message': "No existe un empleado con el legajo {}".format(legajo)}, 404
@@ -56,21 +52,16 @@ class Empleado(Resource):
     @jwt_required()
     def put(self, legajo):
         data = Empleado.parser.parse_args()
+
         empleado = EmpleadoModel.find_by_legajo(legajo)
-        update_empleado = EmpleadoModel(legajo, data['nombre'])
         
         if empleado is None:
-            try:
-                update_empleado.insert()
-            except:
-                return {'message': 'Un error ocurrió insertando el Empleado'}, 500
+            empleado = EmpleadoModel(legajo, data['nombre'])
         else:
-            try:
-                empleado.update()
-            except:
-                return {'message': 'Un error ocurrió actualizando el Empleado'}, 500
+            empleado.nombre = data['nombre']
 
-        return update_empleado.json(), 200
+        empleado.save_to_db()
+        return empleado.json(), 200
 
 
 class ListEmpleado(Resource):

@@ -1,6 +1,13 @@
 import sqlite3
+from db import db
 
-class EmpleadoModel:
+class EmpleadoModel(db.Model):
+    __tablename__ = 'empleado'
+
+    id = db.Column(db.Integer, primary_key = True)
+    legajo = db.Column(db.String(4))
+    nombre = db.Column(db.String(80))
+
     def __init__(self, legajo, nombre):
         self.legajo = legajo
         self.nombre = nombre
@@ -10,28 +17,12 @@ class EmpleadoModel:
 
     @classmethod
     def find_by_legajo(cls, legajo):
-        connection = sqlite3.connect("data.db")
-        cursor = connection.cursor()
-        query = "SELECT * FROM empleado WHERE legajo = ?"
-        result = cursor.execute(query, (legajo,))
-        row = result.fetchone()
-        connection.close()
+        return cls.query.filter_by(legajo=legajo).first()
 
-        if row:
-            return cls(*row) #row[0], row[1]
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
 
-    def insert(self):
-        connection = sqlite3.connect("data.db")
-        cursor = connection.cursor()
-        query = "INSERT INTO empleado VALUES (?, ?)"
-        cursor.execute(query, (self.legajo, self.nombre))
-        connection.commit()
-        connection.close()
-
-    def update(self):
-        connection = sqlite3.connect("data.db")
-        cursor = connection.cursor()
-        query = "UPDATE empleado SET nombre = ? WHERE legajo = ?"
-        cursor.execute(query, (self.legajo, self.nombre))
-        connection.commit()
-        connection.close()
+    def delete_to_db(self):
+        db.session.delete(self)
+        db.session.commit()

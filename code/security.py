@@ -1,6 +1,6 @@
 from werkzeug.security import safe_str_cmp   #comparar cadenas de forma segura para cadenas con cifrado no den problema
 
-from models.user import User
+from resources.user import User
 
 users = [
     User(1, 'Yamila', 'Yamila2021+'),

@@ -3,7 +3,7 @@ import sqlite3
 from sqlite3.dbapi2 import Cursor, connect
 from flask_restful import Resource, reqparse
 from flask_jwt import jwt_required
-from flask_cors import cross_origin
+from models.empleado import EmpleadoModel
 
 class Empleado(Resource):
 
@@ -15,33 +15,33 @@ class Empleado(Resource):
     )
 
     def get(self, legajo):
-        empleado = self.find_by_legajo(legajo)
+        empleado = EmpleadoModel.find_by_legajo(legajo)
 
         if empleado:
-            return empleado
+            return empleado.json()
 
         return {'message': 'Empleado no encontrado'}, 404
 
     @jwt_required()
     def post(self, legajo):
-        if self.find_by_legajo(legajo):
+        if EmpleadoModel.find_by_legajo(legajo):
             return {'message': "Ya existe un empleado con el legajo {}".format(legajo)}, 400
 
         #data = request.get_json()     #force=True significa que no se fijará en el Content-Type, asumirá que es un json #silent=True simplemente no da error, no devuelve nada
         data = Empleado.parser.parse_args()
         
-        empleado = {'legajo': legajo, 'nombre': data['nombre']}
+        empleado = EmpleadoModel(legajo, data['nombre'])
 
         try:
-            self.insert(empleado)
+            empleado.insert()
         except:
             return {'message': 'Un error ocurrió insertando el empleado'}, 500
 
-        return empleado, 201
+        return empleado.json(), 201
 
     @jwt_required()
     def delete(self, legajo):
-        if self.find_by_legajo(legajo):
+        if EmpleadoModel.find_by_legajo(legajo):
             connection = sqlite3.connect("data.db")
             cursor = connection.cursor()
             query = "DELETE FROM empleado WHERE legajo = ?"
@@ -56,48 +56,22 @@ class Empleado(Resource):
     @jwt_required()
     def put(self, legajo):
         data = Empleado.parser.parse_args()
-        empleado = self.find_by_legajo(legajo)
-        update_empleado = {'legajo': legajo, 'nombre': data['nombre']}
+        empleado = EmpleadoModel.find_by_legajo(legajo)
+        update_empleado = EmpleadoModel(legajo, data['nombre'])
         
-        try:
-            if empleado:
-                self.update(update_empleado)
-            else:
-                self.insert(update_empleado)
-        except:
-            return {'message': 'Oucrrió un error en el servidor'}, 500
-        
-        return update_empleado, 200
+        if empleado is None:
+            try:
+                update_empleado.insert()
+            except:
+                return {'message': 'Un error ocurrió insertando el Empleado'}, 500
+        else:
+            try:
+                empleado.update()
+            except:
+                return {'message': 'Un error ocurrió actualizando el Empleado'}, 500
 
-    @classmethod
-    def find_by_legajo(cls, legajo):
-        connection = sqlite3.connect("data.db")
-        cursor = connection.cursor()
-        query = "SELECT * FROM empleado WHERE legajo = ?"
-        result = cursor.execute(query, (legajo,))
-        row = result.fetchone()
-        connection.close()
+        return update_empleado.json(), 200
 
-        if row:
-            return {'empleado': {'legajo': row[0], 'nombre': row[1]}}, 200 
-
-    @classmethod
-    def insert(cls, empleado):
-        connection = sqlite3.connect("data.db")
-        cursor = connection.cursor()
-        query = "INSERT INTO empleado VALUES (?, ?)"
-        cursor.execute(query, (empleado['legajo'], empleado['nombre']))
-        connection.commit()
-        connection.close()
-
-    @classmethod
-    def update(cls, empleado):
-        connection = sqlite3.connect("data.db")
-        cursor = connection.cursor()
-        query = "UPDATE empleado SET nombre = ? WHERE legajo = ?"
-        cursor.execute(query, (empleado['legajo'], empleado['nombre']))
-        connection.commit()
-        connection.close()
 
 class ListEmpleado(Resource):
     def get(self):

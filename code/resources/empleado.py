@@ -74,7 +74,7 @@ class ListEmpleado(Resource):
         empleados = []
 
         for row in result:
-            empleados.append({'legajo': row[0], 'nombre': row[1]})
+            empleados.append({'legajo': row[1], 'nombre': row[2]})
 
         connection.close()
 
